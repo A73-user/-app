@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>现代智能冰箱 APP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+        .temp-big { font-size: 2.8rem; font-weight: 700; line-height: 1; }
+        .tab-active { color: #2563eb; border-bottom: 3px solid #2563eb; }
+        .card { transition: all 0.3s; }
+        .card:active { transform: scale(0.97); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen pb-20">
+
+    <!-- 顶部栏 -->
+    <div class="fixed top-0 left-0 right-0 bg-white shadow z-50 max-w-md mx-auto">
+        <div class="px-4 py-3 flex items-center justify-between">
+            <h1 class="text-xl font-bold">现代智能冰箱</h1>
+            <div class="flex items-center gap-2 text-emerald-500">
+                <i class="fas fa-circle text-xs"></i>
+                <span class="text-sm font-medium">在线</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-md mx-auto pt-16">
+
+        <!-- 首页 -->
+        <div id="page-home">
+            <div class="p-4">
+                <!-- 冰箱状态卡 -->
+                <div class="bg-gradient-to-br from-blue-600 to-cyan-600 text-white rounded-3xl p-6 mb-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="text-sm opacity-90">客厅 · 智能模式</div>
+                            <div id="main-mode" class="text-3xl font-bold mt-1">运行正常</div>
+                        </div>
+                        <div onclick="toggleDoor()" id="door-btn" class="text-6xl cursor-pointer">🚪</div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 mt-8 text-center">
+                        <div>
+                            <div class="text-xs opacity-75">冷藏室</div>
+                            <div id="t1" class="temp-big">4</div>
+                            <div class="text-xs">℃</div>
+                        </div>
+                        <div>
+                            <div class="text-xs opacity-75">冷冻室</div>
+                            <div id="t2" class="temp-big">-18</div>
+                            <div class="text-xs">℃</div>
+                        </div>
+                        <div>
+                            <div class="text-xs opacity-75">变温室</div>
+                            <div id="t3" class="temp-big">0</div>
+                            <div class="text-xs">℃</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快捷模式 -->
+                <div class="grid grid-cols-4 gap-3 px-2 mb-8">
+                    <button onclick="setMode(0)" class="bg-white rounded-2xl py-4 card shadow-sm">
+                        <div class="text-3xl mb-1">🧠</div>
+                        <div class="text-xs">智能</div>
+                    </button>
+                    <button onclick="setMode(1)" class="bg-white rounded-2xl py-4 card shadow-sm">
+                        <div class="text-3xl mb-1">❄️</div>
+                        <div class="text-xs">速冷</div>
+                    </button>
+                    <button onclick="setMode(2)" class="bg-white rounded-2xl py-4 card shadow-sm">
+                        <div class="text-3xl mb-1">🧊</div>
+                        <div class="text-xs">速冻</div>
+                    </button>
+                    <button onclick="setMode(3)" class="bg-white rounded-2xl py-4 card shadow-sm">
+                        <div class="text-3xl mb-1">🏖️</div>
+                        <div class="text-xs">假日</div>
+                    </button>
+                </div>
+
+                <!-- 温度调节 -->
+                <div class="px-4">
+                    <h3 class="font-semibold mb-4">温度调节</h3>
+                    <div class="space-y-6 bg-white rounded-3xl p-6">
+                        <div>
+                            <div class="flex justify-between mb-3">
+                                <span class="font-medium">冷藏室</span>
+                                <span id="cold-val" class="font-bold text-blue-600">4℃</span>
+                            </div>
+                            <input type="range" min="2" max="8" value="4" id="cold-slider" class="w-full accent-blue-500" oninput="updateTemp(0)">
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-3">
+                                <span class="font-medium">冷冻室</span>
+                                <span id="freeze-val" class="font-bold text-cyan-600">-18℃</span>
+                            </div>
+                            <input type="range" min="-24" max="-16" value="-18" id="freeze-slider" class="w-full accent-cyan-500" oninput="updateTemp(1)">
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-3">
+                                <span class="font-medium">变温室</span>
+                                <span id="var-val" class="font-bold text-purple-600">0℃</span>
+                            </div>
+                            <input type="range" min="-20" max="8" value="0" id="var-slider" class="w-full accent-purple-500" oninput="updateTemp(2)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 食材页面 -->
+        <div id="page-food" class="hidden p-4">
+            <h2 class="text-2xl font-bold mb-4">食材管理</h2>
+            <div class="flex gap-3 mb-6">
+                <div class="flex-1 bg-blue-100 text-blue-700 rounded-2xl p-4 text-center">
+                    <div class="text-3xl font-bold">8</div>
+                    <div class="text-sm">正常</div>
+                </div>
+                <div class="flex-1 bg-amber-100 text-amber-700 rounded-2xl p-4 text-center">
+                    <div class="text-3xl font-bold">2</div>
+                    <div class="text-sm">即将过期</div>
+                </div>
+                <div class="flex-1 bg-red-100 text-red-700 rounded-2xl p-4 text-center">
+                    <div class="text-3xl font-bold">1</div>
+                    <div class="text-sm">已过期</div>
+                </div>
+            </div>
+
+            <div class="space-y-3" id="food-list">
+                <!-- JS动态生成 -->
+            </div>
+        </div>
+
+        <!-- 消息页面 -->
+        <div id="page-msg" class="hidden p-4">
+            <h2 class="text-2xl font-bold mb-4">消息中心</h2>
+            <div class="space-y-3">
+                <div class="bg-white rounded-2xl p-4">
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl">🚪</span>
+                        <div class="flex-1">
+                            <div class="font-medium">门开超时提醒</div>
+                            <div class="text-sm text-gray-500 mt-1">冷藏室门已开启超过3分钟，请及时关闭</div>
+                            <div class="text-xs text-gray-400 mt-2">10:32</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-4">
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl">🌡️</span>
+                        <div class="flex-1">
+                            <div class="font-medium">温度异常</div>
+                            <div class="text-sm text-gray-500 mt-1">冷藏室温度持续5分钟超过8℃</div>
+                            <div class="text-xs text-gray-400 mt-2">09:15</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 我的页面 -->
+        <div id="page-me" class="hidden p-4">
+            <div class="bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-3xl p-8 text-center mb-6">
+                <div class="w-24 h-24 mx-auto bg-white/20 rounded-full flex items-center justify-center text-6xl">👤</div>
+                <div class="mt-4 text-xl font-bold">用户 8888</div>
+                <div class="opacity-75">138****8888 • 管理员</div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-5 space-y-4">
+                <div class="flex items-center justify-between py-2">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-mobile-alt text-xl text-gray-400"></i>
+                        <span>添加冰箱（配网）</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </div>
+                <div class="flex items-center justify-between py-2">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-users text-xl text-gray-400"></i>
+                        <span>设备共享</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </div>
+                <div onclick="alert('开始检测固件升级...')" class="flex items-center justify-between py-2 cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-sync text-xl text-gray-400"></i>
+                        <span>固件升级 (OTA)</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t max-w-md mx-auto">
+        <div class="flex justify-around py-2 text-gray-500">
+            <button onclick="switchTab(0)" id="nav0" class="flex flex-col items-center tab-active">
+                <i class="fas fa-home text-2xl"></i>
+                <span class="text-xs mt-1">首页</span>
+            </button>
+            <button onclick="switchTab(1)" id="nav1" class="flex flex-col items-center">
+                <i class="fas fa-carrot text-2xl"></i>
+                <span class="text-xs mt-1">食材</span>
+            </button>
+            <button onclick="switchTab(2)" id="nav2" class="flex flex-col items-center">
+                <i class="fas fa-bell text-2xl"></i>
+                <span class="text-xs mt-1">消息</span>
+            </button>
+            <button onclick="switchTab(3)" id="nav3" class="flex flex-col items-center">
+                <i class="fas fa-user text-2xl"></i>
+                <span class="text-xs mt-1">我的</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 切换页面
+        function switchTab(n) {
+            document.querySelectorAll('#page-home, #page-food, #page-msg, #page-me').forEach(page => {
+                page.classList.add('hidden');
+            });
+            document.getElementById(['page-home','page-food','page-msg','page-me'][n]).classList.remove('hidden');
+
+            document.querySelectorAll('[id^="nav"]').forEach(nav => nav.classList.remove('tab-active'));
+            document.getElementById('nav'+n).classList.add('tab-active');
+        }
+
+        // 更新温度
+        function updateTemp(type) {
+            if(type === 0) {
+                const v = document.getElementById('cold-slider').value;
+                document.getElementById('t1').textContent = v;
+                document.getElementById('cold-val').textContent = v + '℃';
+            } else if(type === 1) {
+                const v = document.getElementById('freeze-slider').value;
+                document.getElementById('t2').textContent = v;
+                document.getElementById('freeze-val').textContent = v + '℃';
+            } else {
+                const v = document.getElementById('var-slider').value;
+                document.getElementById('t3').textContent = v;
+                document.getElementById('var-val').textContent = v + '℃';
+            }
+        }
+
+        // 切换门状态
+        let doorOpen = false;
+        function toggleDoor() {
+            doorOpen = !doorOpen;
+            const door = document.getElementById('door-btn');
+            door.textContent = doorOpen ? '🚪' : '❄️';
+            door.style.transform = doorOpen ? 'rotate(-15deg)' : 'none';
+        }
+
+        // 设置模式
+        function setMode(m) {
+            const texts = ["智能模式已开启", "速冷模式启动", "速冻模式启动", "假日模式已开启"];
+            document.getElementById('main-mode').textContent = texts[m];
+            alert(texts[m]);
+        }
+
+        // 初始化食材列表
+        function initFoodList() {
+            const foods = [
+                {name:"西兰花", icon:"🥦", place:"冷藏室", days:"5"},
+                {name:"三文鱼", icon:"🐟", place:"冷冻室", days:"1"},
+                {name:"牛奶", icon:"🥛", place:"冷藏室", days:"3"},
+                {name:"苹果", icon:"🍎", place:"冷藏室", days:"8"},
+            ];
+            let html = '';
+            foods.forEach(f => {
+                html += `
+                <div class="bg-white rounded-2xl p-4 flex items-center gap-4 card">
+                    <span class="text-4xl">${f.icon}</span>
+                    <div class="flex-1">
+                        <div class="font-medium">${f.name}</div>
+                        <div class="text-xs text-gray-500">${f.place}</div>
+                    </div>
+                    <div class="text-emerald-500 font-medium">剩 ${f.days} 天</div>
+                </div>`;
+            });
+            document.getElementById('food-list').innerHTML = html;
+        }
+
+        // 初始化
+        window.onload = function() {
+            initFoodList();
+            switchTab(0);
+        };
+    </script>
+</body>
+</html>
