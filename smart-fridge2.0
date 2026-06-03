@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Smart Fridge</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Microsoft YaHei",sans-serif;
+}
+
+body{
+background:#eef4fa;
+max-width:430px;
+margin:auto;
+min-height:100vh;
+padding-bottom:80px;
+}
+
+.header{
+background:linear-gradient(135deg,#0f4c81,#1d78d7);
+color:white;
+padding:30px 20px;
+border-radius:0 0 30px 30px;
+}
+
+.header h1{
+font-size:24px;
+}
+
+.online{
+margin-top:8px;
+opacity:.9;
+}
+
+.temperature{
+font-size:60px;
+font-weight:bold;
+margin-top:15px;
+}
+
+.card{
+background:white;
+margin:15px;
+padding:18px;
+border-radius:20px;
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+
+.card-title{
+font-size:18px;
+font-weight:600;
+margin-bottom:15px;
+}
+
+.zone{
+margin-bottom:20px;
+}
+
+.zone-top{
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+}
+
+.zone-name{
+font-size:15px;
+}
+
+.zone-value{
+color:#1976d2;
+font-weight:bold;
+}
+
+input[type=range]{
+width:100%;
+}
+
+.mode-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+}
+
+.mode-btn{
+padding:15px;
+border:none;
+border-radius:15px;
+background:#f5f7fa;
+font-size:14px;
+cursor:pointer;
+transition:.3s;
+}
+
+.mode-btn.active{
+background:#1976d2;
+color:white;
+}
+
+.food-item{
+display:flex;
+justify-content:space-between;
+padding:12px 0;
+border-bottom:1px solid #eee;
+}
+
+.food-item:last-child{
+border:none;
+}
+
+.expire{
+color:#ff5722;
+font-size:14px;
+}
+
+.notice{
+padding:12px;
+background:#f8fbff;
+border-radius:12px;
+margin-bottom:10px;
+}
+
+.notice-time{
+font-size:12px;
+color:#999;
+margin-top:5px;
+}
+
+.bottom-nav{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+max-width:430px;
+margin:auto;
+background:white;
+display:flex;
+justify-content:space-around;
+padding:12px 0;
+box-shadow:0 -2px 15px rgba(0,0,0,.1);
+}
+
+.nav-item{
+cursor:pointer;
+text-align:center;
+font-size:13px;
+color:#666;
+}
+
+.nav-item.active{
+color:#1976d2;
+font-weight:bold;
+}
+
+.page{
+display:none;
+}
+
+.page.active{
+display:block;
+}
+
+.stat-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+}
+
+.stat-box{
+background:#f8fbff;
+padding:15px;
+border-radius:15px;
+text-align:center;
+}
+
+.stat-value{
+font-size:22px;
+font-weight:bold;
+color:#1976d2;
+}
+
+.profile-item{
+padding:15px 0;
+border-bottom:1px solid #eee;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- 首页 -->
+
+<div id="home" class="page active">
+
+<div class="header">
+
+<h1>智能冰箱</h1>
+
+<div class="online">
+设备在线 · 智能模式
+</div>
+
+<div class="temperature" id="mainTemp">
+8℃
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="card-title">
+设备状态
+</div>
+
+<div class="stat-grid">
+
+<div class="stat-box">
+<div class="stat-value">96%</div>
+<div>保鲜度</div>
+</div>
+
+<div class="stat-box">
+<div class="stat-value">2.4kWh</div>
+<div>今日能耗</div>
+</div>
+
+<div class="stat-box">
+<div class="stat-value">35</div>
+<div>食材数量</div>
+</div>
+
+<div class="stat-box">
+<div class="stat-value">3</div>
+<div>待处理提醒</div>
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="card-title">
+快捷控制
+</div>
+
+<div class="mode-grid">
+
+<button class="mode-btn active">
+智能模式
+</button>
+
+<button class="mode-btn">
+速冷模式
+</button>
+
+<button class="mode-btn">
+速冻模式
+</button>
+
+<button class="mode-btn">
+假日模式
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- 温控页面 -->
+
+<div id="tempPage" class="page">
+
+<div class="card">
+
+<div class="card-title">
+三温区控制
+</div>
+
+<div class="zone">
+
+<div class="zone-top">
+<span class="zone-name">冷藏室</span>
+<span class="zone-value" id="coldValue">5℃</span>
+</div>
+
+<input
+type="range"
+min="2"
+max="8"
+value="5"
+id="coldSlider">
+
+</div>
+
+<div class="zone">
+
+<div class="zone-top">
+<span class="zone-name">冷冻室</span>
+<span class="zone-value" id="freezeValue">-18℃</span>
+</div>
+
+<input
+type="range"
+min="-24"
+max="-16"
+value="-18"
+id="freezeSlider">
+
+</div>
+
+<div class="zone">
+
+<div class="zone-top">
+<span class="zone-name">变温室</span>
+<span class="zone-value" id="changeValue">0℃</span>
+</div>
+
+<input
+type="range"
+min="-20"
+max="8"
+value="0"
+id="changeSlider">
+
+</div>
+
+</div>
+
+</div>
+<!-- 食材管理页面 -->
+
+<div id="foodPage" class="page">
+
+<div class="card">
+
+<div class="card-title">
+食材管理
+</div>
+
+<div class="food-item">
+<span>🥛 牛奶</span>
+<span class="expire">剩余3天</span>
+</div>
+
+<div class="food-item">
+<span>🥚 鸡蛋</span>
+<span class="expire">剩余5天</span>
+</div>
+
+<div class="food-item">
+<span>🍎 苹果</span>
+<span class="expire">剩余7天</span>
+</div>
+
+<div class="food-item">
+<span>🥩 牛肉</span>
+<span class="expire">剩余2天</span>
+</div>
+
+<div class="food-item">
+<span>🥦 西兰花</span>
+<span class="expire">剩余1天</span>
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="card-title">
+库存统计
+</div>
+
+<div class="stat-grid">
+
+<div class="stat-box">
+<div class="stat-value">35</div>
+<div>总食材</div>
+</div>
+
+<div class="stat-box">
+<div class="stat-value">5</div>
+<div>即将过期</div>
+</div>
+
+<div class="stat-box">
+<div class="stat-value">12</div>
+<div>水果</div>
+</div>
+
+<div class="stat-box">
+<div class="stat-value">8</div>
+<div>肉类</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- 消息中心 -->
+
+<div id="messagePage" class="page">
+
+<div class="card">
+
+<div class="card-title">
+消息中心
+</div>
+
+<div class="notice">
+<div>⚠ 门开启超过3分钟</div>
+<div class="notice-time">10分钟前</div>
+</div>
+
+<div class="notice">
+<div>🥛 牛奶即将过期</div>
+<div class="notice-time">30分钟前</div>
+</div>
+
+<div class="notice">
+<div>🔄 OTA升级可用</div>
+<div class="notice-time">1小时前</div>
+</div>
+
+<div class="notice">
+<div>❄ 冷冻室温度正常</div>
+<div class="notice-time">今天09:12</div>
+</div>
+
+</div>
+
+</div>
+
+<!-- 我的页面 -->
+
+<div id="profilePage" class="page">
+
+<div class="card">
+
+<div style="text-align:center">
+
+<img
+src="https://ui-avatars.com/api/?name=User"
+style="
+width:80px;
+height:80px;
+border-radius:50%;
+margin-bottom:15px;
+">
+
+<h3>智能冰箱用户</h3>
+
+<p style="color:#888">
+设备已绑定
+</p>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="profile-item">
+设备管理
+</div>
+
+<div class="profile-item">
+家庭共享
+</div>
+
+<div class="profile-item">
+固件升级
+</div>
+
+<div class="profile-item">
+能耗分析
+</div>
+
+<div class="profile-item">
+意见反馈
+</div>
+
+<div class="profile-item">
+关于我们
+</div>
+
+</div>
+
+</div>
+
+<!-- 底部导航 -->
+
+<div class="bottom-nav">
+
+<div
+class="nav-item active"
+onclick="showPage('home',this)">
+🏠
+<br>
+首页
+</div>
+
+<div
+class="nav-item"
+onclick="showPage('tempPage',this)">
+🌡
+<br>
+温控
+</div>
+
+<div
+class="nav-item"
+onclick="showPage('foodPage',this)">
+🥗
+<br>
+食材
+</div>
+
+<div
+class="nav-item"
+onclick="showPage('messagePage',this)">
+🔔
+<br>
+消息
+</div>
+
+<div
+class="nav-item"
+onclick="showPage('profilePage',this)">
+👤
+<br>
+我的
+</div>
+
+</div>
+
+<script>
+
+// 页面切换
+
+function showPage(id,el){
+
+document
+.querySelectorAll(".page")
+.forEach(page=>{
+page.classList.remove("active");
+});
+
+document
+.getElementById(id)
+.classList.add("active");
+
+document
+.querySelectorAll(".nav-item")
+.forEach(nav=>{
+nav.classList.remove("active");
+});
+
+el.classList.add("active");
+
+}
+
+// 温度控制
+
+const coldSlider =
+document.getElementById("coldSlider");
+
+const freezeSlider =
+document.getElementById("freezeSlider");
+
+const changeSlider =
+document.getElementById("changeSlider");
+
+coldSlider.oninput = () => {
+
+document.getElementById(
+"coldValue"
+).innerText =
+coldSlider.value + "℃";
+
+};
+
+freezeSlider.oninput = () => {
+
+document.getElementById(
+"freezeValue"
+).innerText =
+freezeSlider.value + "℃";
+
+};
+
+changeSlider.oninput = () => {
+
+document.getElementById(
+"changeValue"
+).innerText =
+changeSlider.value + "℃";
+
+};
+
+// 模式切换
+
+document
+.querySelectorAll(".mode-btn")
+.forEach(btn=>{
+
+btn.onclick=()=>{
+
+document
+.querySelectorAll(".mode-btn")
+.forEach(item=>{
+
+item.classList.remove("active");
+
+});
+
+btn.classList.add("active");
+
+};
+
+});
+
+// 模拟实时温度变化
+
+setInterval(()=>{
+
+const temp =
+Math.floor(
+Math.random()*3+4
+);
+
+document
+.getElementById("mainTemp")
+.innerText =
+temp + "℃";
+
+},5000);
+
+</script>
+
+</body>
+</html>
